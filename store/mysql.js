@@ -24,7 +24,7 @@ const handleConnection = () => {
 
   connection.on("error", (err) => {
     console.error("[db error]", err);
-    if (error.code === "PROTOCOL_CONNECTION_LOST") {
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
       handleConnection();
     } else {
       throw err;
@@ -53,6 +53,7 @@ const get = (table, id) => {
 };
 
 const insert = (table, data) => {
+  console.log(table, data);
   return new Promise((resolve, reject) => {
     connection.query(`INSERT INTO ${table} SET ?`, data, (err, result) => {
       if (err) return reject(err);
@@ -94,17 +95,21 @@ const query = (table, query, join) => {
     joinQuery = `JOIN ${key} ON ${table}.${val} = ${key}.id`;
   }
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM ${table} ${joinQuery} WHERE ${table}.?`, query, (err, result) => {
-      if (err) return reject(err);
-      console.log(result);
-      resolve(result || null);
-    });
+    connection.query(
+      `SELECT * FROM ${table} ${joinQuery} WHERE ${table}.?`,
+      query,
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result || null);
+      }
+    );
   });
 };
 
 module.exports = {
   list,
   get,
+  insert,
   upsert,
   query,
 };
